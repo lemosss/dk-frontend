@@ -47,7 +47,7 @@
         </p>
 
         <div class="hero-cta">
-          <button class="btn-primary" @click="goToLogin">
+          <button class="btn-primary" @click="goToRegister">
             Começar Gratuitamente
             <ArrowRight :size="20" />
           </button>
@@ -59,7 +59,13 @@
 
         <div class="hero-social-proof">
           <div class="avatars">
-            <div class="avatar" v-for="i in 4" :key="i"></div>
+            <img
+              v-for="(avatar, i) in avatarImages"
+              :key="i"
+              :src="avatar"
+              :alt="`Usuário ${i + 1}`"
+              class="avatar"
+            />
           </div>
           <div class="social-proof-text">
             <div class="stars">
@@ -374,7 +380,10 @@
                 <span>{{ feature }}</span>
               </li>
             </ul>
-            <button :class="plan.featured ? 'btn-primary' : 'btn-outline'" @click="goToLogin">
+            <button
+              :class="plan.featured ? 'btn-primary' : 'btn-outline'"
+              @click="goToPlan(plan.name.toLowerCase())"
+            >
               {{ plan.cta }}
             </button>
           </div>
@@ -413,7 +422,7 @@
           Comece gratuitamente, sem cartão de crédito.
         </p>
         <div class="cta-buttons">
-          <button class="btn-cta-primary" @click="goToLogin">
+          <button class="btn-cta-primary" @click="goToRegister">
             Criar Conta Grátis
             <ArrowRight :size="20" />
           </button>
@@ -509,8 +518,23 @@ const router = useRouter()
 const featuresSection = ref<HTMLElement | null>(null)
 const openFaq = ref<number | null>(null)
 
+const avatarImages = [
+  'https://randomuser.me/api/portraits/women/44.jpg',
+  'https://randomuser.me/api/portraits/men/32.jpg',
+  'https://randomuser.me/api/portraits/women/68.jpg',
+  'https://randomuser.me/api/portraits/men/75.jpg'
+]
+
+const goToRegister = () => {
+  router.push('/register')
+}
+
 const goToLogin = () => {
   router.push('/admin/login')
+}
+
+const goToPlan = (planName: string) => {
+  router.push(`/register?plan=${planName}`)
 }
 
 const scrollTo = (id: string) => {
@@ -1061,9 +1085,10 @@ $gray-100: #f7fafc;
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    background: linear-gradient(135deg, $gray-300 0%, $gray-400 100%);
     border: 3px solid white;
     margin-left: -10px;
+    object-fit: cover;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 
     &:first-child {
       margin-left: 0;
@@ -1369,6 +1394,7 @@ $gray-100: #f7fafc;
   font-weight: 800;
   line-height: 1.2;
   margin-bottom: 2rem;
+  color: $dark;
 
   @media (max-width: 768px) {
     font-size: 2rem;

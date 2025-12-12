@@ -16,6 +16,22 @@ const router = createRouter({
     },
 
     // ==========================================
+    // REGISTRO E CHECKOUT (Público)
+    // ==========================================
+    {
+      path: '/register',
+      name: 'register',
+      component: () => import('@/views/RegisterView.vue'),
+      meta: { guest: true }
+    },
+    {
+      path: '/checkout/:planId?',
+      name: 'checkout',
+      component: () => import('@/views/CheckoutView.vue'),
+      meta: { public: true }
+    },
+
+    // ==========================================
     // ROTAS GLOBAIS (Super Admin)
     // ==========================================
     {

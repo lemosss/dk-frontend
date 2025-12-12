@@ -126,6 +126,34 @@ export interface Token {
   redirect_to_admin?: boolean  // Para redirecionar superadmin para admin
 }
 
+// Plan types
+export interface Plan {
+  id: number
+  name: string
+  display_name: string
+  price: number
+  max_clients: number
+  features: string[]
+}
+
+// Register types
+export interface RegisterRequest {
+  email: string
+  password: string
+  name: string
+  company_name: string
+  company_key: string
+  cnpj: string
+  plan_id?: number
+}
+
+export interface RegisterResponse {
+  access_token: string
+  token_type: string
+  company_key: string
+  user: User
+}
+
 // Dashboard stats
 export interface DashboardStats {
   total: number
