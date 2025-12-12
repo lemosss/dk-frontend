@@ -83,6 +83,20 @@
             </div>
 
             <div class="form-group">
+              <label class="form-label">Identificador (URL) *</label>
+              <input 
+                type="text" 
+                class="form-input" 
+                v-model="form.company_key" 
+                required 
+                placeholder="minha-empresa"
+                pattern="[a-z0-9-]+"
+                :disabled="!!editingCompany"
+              />
+              <small class="form-hint">Usado na URL de acesso. Ex: /minha-empresa/login</small>
+            </div>
+
+            <div class="form-group">
               <label class="form-label">CNPJ *</label>
               <input type="text" class="form-input" v-model="form.cnpj" required placeholder="00.000.000/0001-00" />
             </div>
@@ -100,6 +114,14 @@
             <div class="form-group">
               <label class="form-label">Endereço</label>
               <input type="text" class="form-input" v-model="form.address" placeholder="Endereço completo" />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Cor Principal</label>
+              <div class="color-input-group">
+                <input type="color" v-model="form.primary_color" class="color-picker" />
+                <input type="text" class="form-input" v-model="form.primary_color" placeholder="#3B82F6" maxlength="7" />
+              </div>
             </div>
 
             <div class="form-group" v-if="editingCompany">
@@ -169,10 +191,12 @@ const deleting = ref(false)
 
 const form = reactive({
   name: '',
+  company_key: '',
   cnpj: '',
   email: '',
   phone: '',
   address: '',
+  primary_color: '#3B82F6',
   is_active: true
 })
 
@@ -190,10 +214,12 @@ async function loadCompanies() {
 function openCreateModal() {
   editingCompany.value = null
   form.name = ''
+  form.company_key = ''
   form.cnpj = ''
   form.email = ''
   form.phone = ''
   form.address = ''
+  form.primary_color = '#3B82F6'
   form.is_active = true
   showModal.value = true
 }
@@ -201,10 +227,12 @@ function openCreateModal() {
 function openEditModal(company: Company) {
   editingCompany.value = company
   form.name = company.name
+  form.company_key = company.company_key
   form.cnpj = company.cnpj
   form.email = company.email || ''
   form.phone = company.phone || ''
   form.address = company.address || ''
+  form.primary_color = company.primary_color || '#3B82F6'
   form.is_active = company.is_active
   showModal.value = true
 }
@@ -215,7 +243,7 @@ function closeModal() {
 }
 
 async function saveCompany() {
-  if (!form.name || !form.cnpj) return
+  if (!form.name || !form.cnpj || !form.company_key) return
 
   saving.value = true
   try {
@@ -226,6 +254,7 @@ async function saveCompany() {
         email: form.email || undefined,
         phone: form.phone || undefined,
         address: form.address || undefined,
+        primary_color: form.primary_color || undefined,
         is_active: form.is_active
       }
       await companyService.update(editingCompany.value.id, data)
@@ -233,10 +262,12 @@ async function saveCompany() {
     } else {
       const data: CompanyCreate = {
         name: form.name,
+        company_key: form.company_key,
         cnpj: form.cnpj,
         email: form.email || undefined,
         phone: form.phone || undefined,
-        address: form.address || undefined
+        address: form.address || undefined,
+        primary_color: form.primary_color || undefined
       }
       await companyService.create(data)
       toast.success('Empresa criada com sucesso!')
@@ -278,3 +309,40 @@ async function deleteCompany() {
 
 onMounted(loadCompanies)
 </script>
+
+<style lang="scss" scoped>
+.color-input-group {
+  display: flex;
+  gap: var(--spacing-sm);
+  align-items: center;
+}
+
+.color-picker {
+  width: 50px;
+  height: 38px;
+  padding: 0;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  
+  &::-webkit-color-swatch-wrapper {
+    padding: 2px;
+  }
+  
+  &::-webkit-color-swatch {
+    border: none;
+    border-radius: var(--radius-sm);
+  }
+}
+
+.form-hint {
+  display: block;
+  margin-top: 4px;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.text-muted {
+  color: var(--text-secondary);
+}
+</style>

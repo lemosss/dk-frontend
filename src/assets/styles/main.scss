@@ -304,6 +304,21 @@ a {
   color: var(--danger);
 }
 
+.badge-primary {
+  background: var(--primary);
+  color: white;
+}
+
+.badge-secondary {
+  background: var(--text-secondary);
+  color: white;
+}
+
+.badge-purple {
+  background: #8B5CF6;
+  color: white;
+}
+
 // Modal
 .modal-overlay {
   position: fixed;
@@ -360,8 +375,7 @@ a {
   display: flex;
   justify-content: flex-end;
   gap: var(--spacing-sm);
-  padding: var(--spacing-lg);
-  border-top: 1px solid var(--border-color);
+  padding: 0 var(--spacing-lg) var(--spacing-lg);
 }
 
 // Empty state

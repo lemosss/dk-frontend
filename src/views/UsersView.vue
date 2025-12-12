@@ -54,11 +54,20 @@
                   </span>
                 </td>
                 <td>
-                  <div class="flex gap-xs">
-                    <button class="btn btn-icon btn-ghost" title="Editar" @click="openEditModal(user)">
+                  <div class="flex gap-xs" style="justify-content: flex-end;">
+                    <button 
+                      class="btn btn-icon btn-ghost" 
+                      title="Editar" 
+                      @click="openEditModal(user)"
+                    >
                       <Pencil :size="16" />
                     </button>
-                    <button class="btn btn-icon btn-ghost" title="Excluir" @click="confirmDelete(user)">
+                    <button 
+                      v-if="canDeleteUser(user)" 
+                      class="btn btn-icon btn-ghost" 
+                      title="Excluir" 
+                      @click="confirmDelete(user)"
+                    >
                       <Trash2 :size="16" />
                     </button>
                   </div>
@@ -82,6 +91,11 @@
         <div class="modal-body">
           <form @submit.prevent="saveUser">
             <div class="form-group">
+              <label class="form-label">Nome</label>
+              <input type="text" class="form-input" v-model="form.name" placeholder="Nome do usuário" />
+            </div>
+
+            <div class="form-group">
               <label class="form-label">Email *</label>
               <input type="email" class="form-input" v-model="form.email" required placeholder="usuario@email.com" />
             </div>
@@ -91,23 +105,22 @@
               <input type="password" class="form-input" v-model="form.password" required placeholder="••••••••" />
             </div>
 
-            <div class="form-group">
-              <label class="form-label">Nome</label>
-              <input type="text" class="form-input" v-model="form.name" placeholder="Nome do usuário" />
-            </div>
-
-            <div class="form-group">
+            <div class="form-group" v-if="!isEditingSelf">
               <label class="form-label">Função *</label>
-              <select class="form-select" v-model="form.role" required>
+              <select 
+                class="form-select" 
+                v-model="form.role" 
+                required
+              >
                 <option value="user">Usuário</option>
                 <option value="admin">Administrador</option>
                 <option value="superadmin">Super Admin</option>
               </select>
             </div>
 
-            <div class="form-group" v-if="form.role === 'user'">
-              <label class="form-label">Empresa</label>
-              <select class="form-select" v-model="form.company_id">
+            <div class="form-group" v-if="form.role === 'user' || form.role === 'admin'">
+              <label class="form-label">Empresa {{ form.role === 'admin' ? '*' : '' }}</label>
+              <select class="form-select" v-model="form.company_id" :required="form.role === 'admin'">
                 <option :value="null">Sem empresa</option>
                 <option v-for="company in companies" :key="company.id" :value="company.id">
                   {{ company.name }}
@@ -115,7 +128,7 @@
               </select>
             </div>
 
-            <div class="form-group" v-if="editingUser">
+            <div class="form-group" v-if="editingUser && !isEditingSelf">
               <label class="form-label">
                 <input type="checkbox" v-model="form.is_active" style="margin-right: 8px;" />
                 Usuário ativo
@@ -159,13 +172,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, computed } from 'vue'
 import Sidebar from '@/components/Sidebar.vue'
 import { userService } from '@/services/users'
 import { companyService } from '@/services/companies'
+import { useAuthStore } from '@/stores/auth'
 import type { User, UserCreate, UserUpdate, Company, RoleEnum } from '@/types'
 import { Plus, Users, Pencil, Trash2, X } from 'lucide-vue-next'
 
+const authStore = useAuthStore()
 const sidebarOpen = ref(false)
 const users = ref<User[]>([])
 const companies = ref<Company[]>([])
@@ -185,6 +200,11 @@ const form = reactive({
   role: 'user' as string,
   company_id: null as number | null,
   is_active: true
+})
+
+// Verifica se está editando o próprio usuário logado
+const isEditingSelf = computed(() => {
+  return editingUser.value?.id === authStore.user?.id
 })
 
 function getRoleLabel(role: RoleEnum | string): string {
@@ -209,6 +229,22 @@ function getCompanyName(companyId: number | null): string {
   if (!companyId) return '-'
   const company = companies.value.find(c => c.id === companyId)
   return company?.name || '-'
+}
+
+/**
+ * Verifica se o usuário pode ser editado
+ * Não permite editar o próprio usuário logado
+ */
+function canEditUser(user: User): boolean {
+  return authStore.user?.id !== user.id
+}
+
+/**
+ * Verifica se o usuário pode ser deletado
+ * Não permite deletar o próprio usuário logado
+ */
+function canDeleteUser(user: User): boolean {
+  return authStore.user?.id !== user.id
 }
 
 async function loadUsers() {

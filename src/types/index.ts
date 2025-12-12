@@ -34,21 +34,26 @@ export interface UserUpdate {
 // Company types
 export interface Company {
   id: number
+  company_key: string
   name: string
   cnpj: string
   email: string | null
   phone: string | null
   address: string | null
+  logo_url: string | null
+  primary_color: string | null
   is_active: boolean
   created_at: string
 }
 
 export interface CompanyCreate {
   name: string
+  company_key: string
   cnpj: string
   email?: string
   phone?: string
   address?: string
+  primary_color?: string
 }
 
 export interface CompanyUpdate {
@@ -57,6 +62,8 @@ export interface CompanyUpdate {
   email?: string
   phone?: string
   address?: string
+  logo_url?: string
+  primary_color?: string
   is_active?: boolean
 }
 
@@ -115,6 +122,8 @@ export interface CalendarData {
 export interface Token {
   access_token: string
   token_type: string
+  company_key?: string | null  // Para redirecionar usuário para sua empresa
+  redirect_to_admin?: boolean  // Para redirecionar superadmin para admin
 }
 
 // Dashboard stats

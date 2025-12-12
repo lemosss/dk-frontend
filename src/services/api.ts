@@ -1,8 +1,11 @@
 import axios from 'axios'
 
+// Base URL do backend
+export const API_BASE_URL = 'http://127.0.0.1:8000'
+
 // Use direct backend URL to avoid proxy issues
 const api = axios.create({
-  baseURL: 'http://127.0.0.1:8000/api/v1',
+  baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   },

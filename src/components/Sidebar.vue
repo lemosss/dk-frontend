@@ -1,7 +1,16 @@
 <template>
   <aside class="sidebar" :class="{ open: isOpen }">
     <div class="sidebar-header">
-      <h1 class="logo">DK Invoice</h1>
+      <!-- Logo da empresa ou padrão -->
+      <div class="logo-container">
+        <img 
+          v-if="companyLogo" 
+          :src="companyLogo" 
+          :alt="companyName"
+          class="company-logo-img"
+        />
+        <h1 class="logo">{{ companyName || 'DK Invoice' }}</h1>
+      </div>
       <button class="sidebar-close" @click="$emit('close')">
         <X :size="20" />
       </button>
@@ -13,7 +22,7 @@
         :key="item.to"
         :to="item.to" 
         class="nav-item"
-        :class="{ active: $route.path === item.to }"
+        :class="{ active: isActive(item.to) }"
       >
         <component :is="item.icon" :size="20" />
         <span>{{ item.label }}</span>
@@ -48,11 +57,15 @@ import {
   Building2, 
   Users, 
   LogOut,
-  X
+  X,
+  Settings
 } from 'lucide-vue-next'
 
-defineProps<{
+const props = defineProps<{
   isOpen: boolean
+  companyName?: string
+  companyLogo?: string | null
+  isTenant?: boolean
 }>()
 
 defineEmits<{
@@ -64,6 +77,13 @@ const authStore = useAuthStore()
 
 const user = computed(() => authStore.user)
 
+const companyKey = computed(() => {
+  if (props.isTenant) {
+    return route.params.companyKey as string || authStore.companyKey
+  }
+  return null
+})
+
 const roleLabel = computed(() => {
   const roles: Record<string, string> = {
     superadmin: 'Super Admin',
@@ -74,22 +94,38 @@ const roleLabel = computed(() => {
 })
 
 const menuItems = computed(() => {
+  // Rotas para tenant (empresa específica)
+  if (props.isTenant && companyKey.value) {
+    const items = [
+      { to: `/${companyKey.value}/dashboard`, label: 'Dashboard', icon: LayoutDashboard },
+      { to: `/${companyKey.value}/calendar`, label: 'Calendário', icon: Calendar },
+      { to: `/${companyKey.value}/invoices`, label: 'Faturas', icon: FileText },
+    ]
+
+    // Admin da empresa pode ver usuários e perfil
+    if (authStore.isAdmin) {
+      items.push({ to: `/${companyKey.value}/users`, label: 'Usuários', icon: Users })
+      items.push({ to: `/${companyKey.value}/profile`, label: 'Perfil da Empresa', icon: Settings })
+    }
+
+    return items
+  }
+
+  // Rotas globais (super admin)
   const items = [
-    { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { to: '/calendar', label: 'Calendário', icon: Calendar },
-    { to: '/invoices', label: 'Faturas', icon: FileText },
+    { to: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { to: '/admin/calendar', label: 'Calendário', icon: Calendar },
+    { to: '/admin/invoices', label: 'Faturas', icon: FileText },
+    { to: '/admin/companies', label: 'Empresas', icon: Building2 },
+    { to: '/admin/users', label: 'Usuários', icon: Users },
   ]
-
-  if (authStore.isAdmin) {
-    items.push({ to: '/companies', label: 'Empresas', icon: Building2 })
-  }
-
-  if (authStore.isSuperAdmin) {
-    items.push({ to: '/users', label: 'Usuários', icon: Users })
-  }
 
   return items
 })
+
+function isActive(path: string): boolean {
+  return route.path === path
+}
 
 function handleLogout() {
   authStore.logout()
@@ -127,10 +163,27 @@ function handleLogout() {
   justify-content: space-between;
 }
 
+.logo-container {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  min-width: 0;
+}
+
+.company-logo-img {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  border-radius: var(--radius-sm);
+}
+
 .logo {
-  font-size: 1.25rem;
+  font-size: 1.125rem;
   font-weight: 700;
   color: var(--primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .sidebar-close {
