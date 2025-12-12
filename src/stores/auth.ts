@@ -100,12 +100,12 @@ export const useAuthStore = defineStore('auth', () => {
     companyKey.value = null
     localStorage.removeItem('token')
     localStorage.removeItem('companyKey')
-    
+
     // Redireciona para login da empresa ou login global
     if (savedCompanyKey) {
       router.push(`/${savedCompanyKey}/login`)
     } else {
-      router.push('/login')
+      router.push('/admin/login')
     }
   }
 

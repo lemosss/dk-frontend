@@ -6,17 +6,23 @@ const router = createRouter({
   history: createWebHistory(),
   routes: [
     // ==========================================
+    // LANDING PAGE
+    // ==========================================
+    {
+      path: '/',
+      name: 'landing',
+      component: () => import('@/views/LandingView.vue'),
+      meta: { public: true }
+    },
+
+    // ==========================================
     // ROTAS GLOBAIS (Super Admin)
     // ==========================================
     {
-      path: '/login',
+      path: '/admin/login',
       name: 'global-login',
       component: () => import('@/views/LoginView.vue'),
       meta: { guest: true, global: true }
-    },
-    {
-      path: '/',
-      redirect: '/login'
     },
     {
       path: '/admin',
@@ -133,8 +139,8 @@ router.beforeEach(async (to, _from, next) => {
     const loaded = await tenantStore.loadTenant(companyKey)
     
     if (!loaded && to.name !== 'tenant-login') {
-      // Empresa não encontrada, redireciona para login global
-      next('/login')
+      // Empresa não encontrada, redireciona para landing
+      next('/')
       return
     }
   }
@@ -147,7 +153,7 @@ router.beforeEach(async (to, _from, next) => {
       if (to.meta.tenant && to.params.companyKey) {
         next(`/${to.params.companyKey}/login`)
       } else {
-        next('/login')
+        next('/admin/login')
       }
       return
     }
@@ -158,7 +164,7 @@ router.beforeEach(async (to, _from, next) => {
     if (to.meta.tenant && to.params.companyKey) {
       next(`/${to.params.companyKey}/login`)
     } else {
-      next('/login')
+      next('/admin/login')
     }
   } 
   // Se está logado e tenta acessar página de guest
@@ -183,7 +189,7 @@ router.beforeEach(async (to, _from, next) => {
     if (authStore.companyKey) {
       next(`/${authStore.companyKey}/dashboard`)
     } else {
-      next('/login')
+      next('/admin/login')
     }
   }
   else {
